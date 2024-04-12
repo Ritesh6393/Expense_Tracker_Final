@@ -30,7 +30,7 @@ async function formSubmit(e){
       };
       console.log(details);
       if(pass===confirmpass){
-        const response=await axios.post(`http://localhost:3000/password/change`,details); 
+        const response=await axios.post(`http://13.53.41.153:3000/password/change`,details); 
         console.log(response);
         
         if(response.data.success==true){

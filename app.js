@@ -38,10 +38,11 @@ app.use('/purchase',purchaseRoute);
 app.use('/premium',premiumRoute);
 app.use('/password',passwordRoute); 
 
-// app.use((req,res)=>{
-//       res.sendFile(path.join(__dirname,`views/${req.url}`))
-//       res.sendFile(path.join(__dirname,`views/${req.url}`))
-// })
+// app.use((req, res, next) => {
+//       console.log('url', req.url);
+//       // Assuming the login page route is '/login', adjust it as needed
+//       res.sendFile(path.join(__dirname, `public/${req.url}`));
+//   });
 
 User.hasMany(Expense);
 Expense.belongsTo(User);  
