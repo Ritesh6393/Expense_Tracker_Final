@@ -28,7 +28,7 @@ async function formSubmit(e) {
     };
 
     try {
-        const response = await axios.post(`http://13.53.39.202:3000/user/signup`, details);
+        const response = await axios.post(`http://localhost:3000/user/signup`, details);
 
         if (response.status === 201) {
             console.log("Success: User added");
