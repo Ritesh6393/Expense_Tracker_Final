@@ -58,7 +58,7 @@ fileurl.belongsTo(User);
 app.use(errorController.get404);
 
 sequelize  
-      //.sync()
-.sync({force:true})  
+      .sync()
+//.sync({force:true})  
     .then(()=>app.listen(3100))
     .catch(err=>console.log(err));  
