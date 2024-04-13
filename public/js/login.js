@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
           password: e.target.password.value,
         };
   
-        const response = await axios.post('http://13.53.41.153:3000/user/login', details);
+        const response = await axios.post('http://16.171.13.135:3000/user/login', details);
   
         if (response.data.success) {
           // Store the token in localStorage upon successful login
