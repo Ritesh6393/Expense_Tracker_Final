@@ -98,53 +98,70 @@ exports.getuser=async(req,res,next)=>{
   }
 }
 
-function uploadToS3(data,filename){
-      const BUCKET_NAME=process.env.AWS_BUCKET;
-      const USER_KEY=process.env.AWS_ACCESS_KEY;
-      const USER_SECRET=process.env.AWS_SECRET_KEY;
-
-      let s3bucket=new AWS.S3({
-          accessKeyId:USER_KEY,
-          secretAccessKey:USER_SECRET
+function uploadToS3(data, filename) {
+    const BUCKET_NAME = process.env.AWS_BUCKET;
+    const USER_KEY = process.env.AWS_ACCESS_KEY;
+    const USER_SECRET = process.env.AWS_SECRET_KEY;
+  
+    // Create S3 instance
+    const s3bucket = new AWS.S3({
+      accessKeyId: USER_KEY,
+      secretAccessKey: USER_SECRET
+    });
+  
+    const params = {
+      Bucket: BUCKET_NAME,
+      Key: filename,
+      Body: data,
+      ACL: 'public-read'
+    };
+  
+    return new Promise((resolve, reject) => {
+      // Upload to S3
+      s3bucket.upload(params, (err, response) => {
+        if (err) {
+          console.log('Something went wrong', err);
+          reject(err);
+        } else {
+          console.log('Success', response);
+          resolve(response.Location);
+        }
       });
-
-          var params={
-              Bucket:BUCKET_NAME,
-              Key:filename,
-              Body:data,
-              ACL:'public-read'
-          };
-          return new Promise((res,rej)=>{
-              s3bucket.upload(params,(err,response)=>{
-                  if(err){
-                      console.log('something went wrong',err);
-                      rej(err);
-                  }
-                  else{
-                      console.log('success',response);
-                      res(response.Location); 
-                  }
-              })
-          })
-          
-}
-
-exports.download=async(req,res,next)=>{
-  try{
-      const expenses=await req.user.getExpenses();
-      const StrExpenses=JSON.stringify(expenses);
-      const userId=req.user.id;
-      const filename=`Expense${userId}/${new Date()}.txt`;
-      const fileURL= await uploadToS3(StrExpenses,filename);
-      await fileModel.create({url:fileURL,userId:userId});
-      res.status(200).json({fileURL,success:true});
-
+    });
   }
-  catch(err){
+
+  exports.download = async (req, res, next) => {
+    try {
+      const user = req.user;
+      
+      // Fetch totalExpense from user table
+      const totalExpense = user.totalexpense;
+      
+      // Fetch user's expenses
+      const expenses = await user.getExpenses();
+      
+      // Convert expenses JSON to CSV
+      const fields = ['description', 'amount', 'category']; // Define fields for CSV
+      const opts = { fields }; // Options for json2csv
+      const csv = parse(expenses, opts); // Convert JSON to CSV
+      
+      // Add totalExpense as a separate line in the CSV
+      const totalExpenseCSV = `\nTotal Expense,,${totalExpense}\n`; // Assuming totalExpense is the total amount
+      
+      const userId = user.id;
+      const filename = `Expense${userId}/${new Date()}.csv`;
+      const fileContent = csv + totalExpenseCSV; // Concatenate totalExpenseCSV and csv
+      const fileURL = await uploadToS3(fileContent, filename); // Upload concatenated CSV
+      
+      await fileModel.create({ url: fileURL, userId: userId });
+      
+      res.status(200).json({ fileURL, success: true });
+  
+    } catch (err) {
       console.log(err);
-      res.status(500).json({error:err,success:false});
-  }
-}
+      res.status(500).json({ error: err.message, success: false });
+    }
+  };
 
 exports.getDownloadHistory=async(req, res, next)=>{
   try{

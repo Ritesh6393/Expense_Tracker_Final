@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const errorController = require('./controllers/error');
 const sequelize=require('./util/database');
 const helmet=require('helmet');
- const morgan=require('morgan');
+const morgan=require('morgan');
 const fs=require('fs');
 
 const User=require('./models/user');
@@ -39,7 +39,6 @@ app.use('/premium',premiumRoute);
 app.use('/password',passwordRoute); 
 
 
-
 User.hasMany(Expense);
 Expense.belongsTo(User);  
     
@@ -55,7 +54,9 @@ fileurl.belongsTo(User);
 app.use(errorController.get404);
 
 sequelize  
-      .sync()
-//.sync({force:true})  
+    //.sync()
+    .sync({force:true})  
     .then(()=>app.listen(3000))
     .catch(err=>console.log(err));  
+
+
